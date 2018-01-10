@@ -1,30 +1,22 @@
-import uuid from 'uuid/v4'
+import randomstring from 'randomstring'
 import {or} from 'ramda'
 import {matches} from 'z'
 
-let keys = {
-    current:null,
-    old: null,
-    past: []
-}
-
-export default function(models){
+export default function({HeartbeatModel}){
     const handler = {
         ping: async(request) => {
             const key = request.payload.key
-            // first key : old will be null
+            const lastKeys = await HeartbeatModel.getLastTwo()
+            const [current,old] = lastKeys            
             const isCurrentOrOld = matches(key)(
                 (x=null) => false,
-                (x) => or(x === keys.current,x === keys.old)
+                (x) => or(x === current.id,x === old.id)
             )
             return Promise.resolve(isCurrentOrOld)
         },
         generateKey : async(request) => {
-            const newKey = uuid()
-            keys.old = keys.current
-            keys.current = newKey
-            keys.past.push(newKey)
-            return Promise.resolve(keys)
+            const key = randomstring.generate({ length: 8 })
+            return await HeartbeatModel.saveKey(key)
         }
 
     }

@@ -2,6 +2,6 @@ import HeartbeatHandler from './heartbeat'
 
 export default function(models){
     return {
-        HeartbeatHandler: HeartbeatHandler()
+        HeartbeatHandler: HeartbeatHandler(models)
     }
 }
