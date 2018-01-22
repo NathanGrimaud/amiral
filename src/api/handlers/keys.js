@@ -1,22 +1,26 @@
 import randomstring from 'randomstring'
 import {or} from 'ramda'
 import {matches} from 'z'
-
-export default function({HeartbeatModel}){
+import * as errors from '../errors'
+export default function({KeysModel, FleetModel}){
     const handler = {
-        ping: async(request) => {
-            const key = request.payload.key
-            const lastKeys = await HeartbeatModel.getLastTwo()
+        check: async(request) => {
+            const {key,name} = request.payload
+            const lastKeys = await KeysModel.getLastTwo()
             const [current,old] = lastKeys            
             const isCurrentOrOld = matches(key)(
                 (x=null) => false,
                 (x) => or(x === current.id,x === old.id)
             )
-            return Promise.resolve(isCurrentOrOld)
+            if( isCurrentOrOld === true){
+                await FleetModel.setLastKey(current.id,name)
+                return current
+            }
+            return errors.InvalidToken
         },
         generateKey : async(request) => {
             const key = randomstring.generate({ length: 8 })
-            return await HeartbeatModel.saveKey(key)
+            return await KeysModel.saveKey(key)
         }
 
     }

@@ -1,7 +1,8 @@
-import HeartbeatHandler from './heartbeat'
-
+import KeysHandler from './keys'
+import Fleet from './fleet'
 export default function(models){
     return {
-        HeartbeatHandler: HeartbeatHandler(models)
+        KeysHandler: KeysHandler(models),
+        FleetHandler: Fleet(models)
     }
 }
